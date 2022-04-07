@@ -1,0 +1,1377 @@
+# marcas_bof
+
+
+----------------------------------------------------------------------------------------
+------------------------ MARCA BOF V2 - MARCA DE "CONFIRMADO" 15d ----------------------
+----------------------------------------------------------------------------------------
+
+-- Doc Base: https://docs.google.com/presentation/d/1uf2fiSl0yrifrLOO1CFnfcVlmx43AdqwLfI1C-pahOQ/edit#slide=id.g1045e6e6e7c_0_655
+
+-- sellers que apareceram há 10d na "marca de ameaça"
+drop table if exists `meli-bi-data.SBOX_PF_MKT.lista_inicial`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.lista_inicial`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id
+  from `meli-bi-data.SBOX_PF_MKT.marca_bof_amenaza`
+  where insert_date = current_date - 15;
+
+
+-- select * from lista_inicial;
+
+
+
+--------------------------- EVOLUÇÕES SEMANAIS ---------------------------
+
+-- evolução semanal uso de adelantos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.adto_semanal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.adto_semanal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT distinct
+    li.site_id,
+    li.cust_id,
+    coalesce(a.adto) adto_s1,
+    coalesce(b.adto) adto_s2,
+    coalesce(c.adto) adto_s3,
+    coalesce(d.adto) adto_s4,
+    coalesce(e.adto) adto_s5,
+    coalesce(f.adto) adto_s6,
+    coalesce(g.adto) adto_s7,
+    coalesce(h.adto) adto_s8
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 7 and current_date then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 14 and current_date - 8 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 21 and current_date - 15 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 28 and current_date - 22 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 35 and current_date - 29 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 42 and current_date - 36 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 49 and current_date - 43 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) g
+    ON li.cust_id = g.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 56 and current_date - 50 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) h
+    ON li.cust_id = h.cust_id
+  WHERE a.adto > 0;
+
+
+-- evolução semanal uso de retiros
+drop table if exists `meli-bi-data.SBOX_PF_MKT.rtro_semanal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.rtro_semanal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT distinct
+    li.site_id,
+    li.cust_id,
+    coalesce(a.rtro,0) rtro_s1,
+    coalesce(b.rtro,0) rtro_s2,
+    coalesce(c.rtro,0) rtro_s3,
+    coalesce(d.rtro,0) rtro_s4,
+    coalesce(e.rtro,0) rtro_s5,
+    coalesce(f.rtro,0) rtro_s6,
+    coalesce(g.rtro,0) rtro_s7,
+    coalesce(h.rtro,0) rtro_s8
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 7 and current_date
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 14 and current_date - 8
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 21 and current_date - 15
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 28 and current_date - 22
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 35 and current_date - 29
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 42 and current_date - 36
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 49 and current_date - 43
+    group by 1
+    ) g
+    ON li.cust_id = g.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 56 and current_date - 50
+    group by 1
+    ) h
+    ON li.cust_id = h.cust_id;
+
+
+-- evolução semanal uso das quantidades de reclamos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.claims_semanal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.claims_semanal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT
+    li.site_id,
+    li.cust_id,
+    coalesce(a.claims,0) claims_s1,
+    coalesce(b.claims,0) claims_s2,
+    coalesce(c.claims,0) claims_s3,
+    coalesce(d.claims,0) claims_s4,
+    coalesce(e.claims,0) claims_s5,
+    coalesce(f.claims,0) claims_s6,
+    coalesce(g.claims,0) claims_s7,
+    coalesce(h.claims,0) claims_s8
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 7 and current_date
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 14 and current_date - 8
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 21 and current_date - 15
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 28 and current_date - 22
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 35 and current_date - 29
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 42 and current_date - 36
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 49 and current_date - 43
+    group by 1
+    ) g
+    ON li.cust_id = g.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 56 and current_date - 50
+    group by 1
+    ) h
+    ON li.cust_id = h.cust_id;
+
+
+-- evolução semanal uso das quantidades de cashout
+drop table if exists `meli-bi-data.SBOX_PF_MKT.co_semanal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.co_semanal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT
+    li.site_id,
+    li.cust_id,
+    coalesce(a.co,0) co_s1,
+    coalesce(b.co,0) co_s2,
+    coalesce(c.co,0) co_s3,
+    coalesce(d.co,0) co_s4,
+    coalesce(e.co,0) co_s5,
+    coalesce(f.co,0) co_s6,
+    coalesce(g.co,0) co_s7,
+    coalesce(h.co,0) co_s8
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 7 and current_date
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 14 and current_date - 8
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 21 and current_date - 15
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 28 and current_date - 22
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 35 and current_date - 29
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 42 and current_date - 36
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 49 and current_date - 43
+    group by 1
+    ) g
+    ON li.cust_id = g.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 56 and current_date - 50
+    group by 1
+    ) h
+    ON li.cust_id = h.cust_id;
+
+
+
+------------------------- RATIOS - SEMANA X SEMANA -------------------------
+
+-- ratios de adelantos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_adto1`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_adto1`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when adto_s2 = 0 and adto_s1 = 0 then 0
+      when adto_s2 = 0 and adto_s1 > 0 then 1000
+      else round(cast(adto_s1 as numeric)/nullif(cast(adto_s2 as numeric),0),2)
+    end) ratio_adto_s1,
+    (case
+      when adto_s3 = 0 and adto_s2 = 0 then 0
+      when adto_s3 = 0 and adto_s2 > 0 then 1000
+      else round(cast(adto_s2 as numeric)/nullif(cast(adto_s3 as numeric),0),2)
+    end) ratio_adto_s2,
+    (case
+      when adto_s4 = 0 and adto_s3 = 0 then 0
+      when adto_s4 = 0 and adto_s3 > 0 then 1000
+      else round(cast(adto_s3 as numeric)/nullif(cast(adto_s4 as numeric),0),2)
+    end) ratio_adto_s3
+  from `meli-bi-data.SBOX_PF_MKT.adto_semanal`;
+
+
+-- ratios de retiros
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_rtro1`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_rtro1`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when rtro_s2 = 0 and rtro_s1 = 0 then 0
+      when rtro_s2 = 0 and rtro_s1 > 0 then 1000
+      else round(cast(rtro_s1 as numeric)/nullif(cast(rtro_s2 as numeric),0),2)
+    end) ratio_rtro_s1,
+    (case
+      when rtro_s3 = 0 and rtro_s2 = 0 then 0
+      when rtro_s3 = 0 and rtro_s2 > 0 then 1000
+      else round(cast(rtro_s2 as numeric)/nullif(cast(rtro_s3 as numeric),0),2)
+    end) ratio_rtro_s2,
+    (case
+      when rtro_s4 = 0 and rtro_s3 = 0 then 0
+      when rtro_s4 = 0 and rtro_s3 > 0 then 1000
+      else round(cast(rtro_s3 as numeric)/nullif(cast(rtro_s4 as numeric),0),2)
+    end) ratio_rtro_s3
+  from `meli-bi-data.SBOX_PF_MKT.rtro_semanal`;
+
+
+-- ratios de reclamos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_claims1`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_claims1`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when claims_s2 = 0 and claims_s1 = 0 then 0
+      when claims_s2 = 0 and claims_s1 > 0 then 1000
+      else round(cast(claims_s1 as numeric)/nullif(cast(claims_s2 as numeric),0),2)
+    end) ratio_claims_s1,
+    (case
+      when claims_s3 = 0 and claims_s2 = 0 then 0
+      when claims_s3 = 0 and claims_s2 > 0 then 1000
+      else round(cast(claims_s2 as numeric)/nullif(cast(claims_s3 as numeric),0),2)
+    end) ratio_claims_s2,
+    (case
+      when claims_s4 = 0 and claims_s3 = 0 then 0
+      when claims_s4 = 0 and claims_s3 > 0 then 1000
+      else round(cast(claims_s3 as numeric)/nullif(cast(claims_s4 as numeric),0),2)
+    end) ratio_claims_s3
+  from `meli-bi-data.SBOX_PF_MKT.claims_semanal`;
+
+
+-- ratios de cashout
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_co1`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_co1`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when co_s2 = 0 and co_s1 = 0 then 0
+      when co_s2 = 0 and co_s1 > 0 then 1000
+      else round(cast(co_s1 as numeric)/nullif(cast(co_s2 as numeric),0),2)
+    end) ratio_co_s1,
+    (case
+      when co_s3 = 0 and co_s2 = 0 then 0
+      when co_s3 = 0 and co_s2 > 0 then 1000
+      else round(cast(co_s2 as numeric)/nullif(cast(co_s3 as numeric),0),2)
+    end) ratio_co_s2,
+    (case
+      when co_s4 = 0 and co_s3 = 0 then 0
+      when co_s4 = 0 and co_s3 > 0 then 1000
+      else round(cast(co_s3 as numeric)/nullif(cast(co_s4 as numeric),0),2)
+    end) ratio_co_s3
+  from `meli-bi-data.SBOX_PF_MKT.co_semanal`;
+
+
+
+------------------------- RATIOS - SEMANA1 X SEMANAs -------------------------
+
+-- ratios de adelantos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_adto2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_adto2`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    adto_s1 semana_atual,
+    (adto_s2 + adto_s3 + adto_s4 + adto_s5 + adto_s6 + adto_s7 + adto_s8) ultimas_semanas,
+    (case
+      when adto_s2 + adto_s3 + adto_s4 + adto_s5 + adto_s6 + adto_s7 + adto_s8 = 0 then 1000
+      else round(cast(adto_s1 as numeric)/nullif(cast((adto_s2 + adto_s3 + adto_s4 + adto_s5 + adto_s6 + adto_s7 + adto_s8)/7 as numeric),0),2)
+    end) ratio_adto_sxss
+  from `meli-bi-data.SBOX_PF_MKT.adto_semanal` 
+  where adto_s1 > 5000;
+
+
+-- ratios de retiros
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_rtro2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_rtro2`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    rtro_s1 semana_atual,
+    (rtro_s2 + rtro_s3 + rtro_s4 + rtro_s5 + rtro_s6 + rtro_s7 + rtro_s8) ultimas_semanas,
+    (case
+      when rtro_s2 + rtro_s3 + rtro_s4 + rtro_s5 + rtro_s6 + rtro_s7 + rtro_s8 = 0 then 1000
+      else round(cast(rtro_s1 as numeric)/nullif(cast((rtro_s2 + rtro_s3 + rtro_s4 + rtro_s5 + rtro_s6 + rtro_s7 + rtro_s8)/7 as numeric),0),2)
+    end) ratio_rtro_sxss
+  from `meli-bi-data.SBOX_PF_MKT.rtro_semanal`;
+
+
+-- ratios de reclamações
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_claims2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_claims2`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    claims_s1 semana_atual,
+    (claims_s2 + claims_s3 + claims_s4 + claims_s5 + claims_s6 + claims_s7 + claims_s8) ultimas_semanas,
+    (case
+      when claims_s2 + claims_s3 + claims_s4 + claims_s5 + claims_s6 + claims_s7 + claims_s8 = 0 then 1000
+      else round(cast(claims_s1 as numeric)/nullif(cast((claims_s2 + claims_s3 + claims_s4 + claims_s5 + claims_s6 + claims_s7 + claims_s8)/7 as numeric),0),2)
+    end) ratio_claims_sxss
+  from `meli-bi-data.SBOX_PF_MKT.claims_semanal`;
+
+
+-- ratios de cashout
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_co2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_co2`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    co_s1 semana_atual,
+    (co_s2 + co_s3 + co_s4 + co_s5 + co_s6 + co_s7 + co_s8) ultimas_semanas,
+    (case
+      when co_s2 + co_s3 + co_s4 + co_s5 + co_s6 + co_s7 + co_s8 = 0 then 1000
+      else round(cast(co_s1 as numeric)/nullif(cast((co_s2 + co_s3 + co_s4 + co_s5 + co_s6 + co_s7 + co_s8)/7 as numeric),0),2)
+    end) ratio_co_sxss
+  from `meli-bi-data.SBOX_PF_MKT.co_semanal`;
+
+
+
+--------------------------- EVOLUÇÕES MENSAIS ---------------------------
+
+-- evolução mensal uso de adelantos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.adto_mensal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.adto_mensal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT distinct
+    li.site_id,
+    li.cust_id,
+    coalesce(a.adto,0) adto_m1,
+    coalesce(b.adto,0) adto_m2,
+    coalesce(c.adto,0) adto_m3,
+    coalesce(d.adto,0) adto_m4,
+    coalesce(e.adto,0) adto_m5,
+    coalesce(f.adto,0) adto_m6
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 30 and current_date then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 60 and current_date - 31 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 90 and current_date - 61 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 120 and current_date - 91 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 150 and current_date - 121 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(case when creation_date between current_date - 180 and current_date - 151 then total_inusd else 0 end) adto
+    from `meli-bi-data.WHOWNER.BT_MP_MIA`
+    where status = 'DONE'
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id
+  WHERE a.adto > 0;
+
+
+-- evolução mensal uso de retiros
+drop table if exists `meli-bi-data.SBOX_PF_MKT.rtro_mensal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.rtro_mensal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT distinct
+    li.site_id,
+    li.cust_id,
+    coalesce(a.rtro,0) rtro_m1,
+    coalesce(b.rtro,0) rtro_m2,
+    coalesce(c.rtro,0) rtro_m3,
+    coalesce(d.rtro,0) rtro_m4,
+    coalesce(e.rtro,0) rtro_m5,
+    coalesce(f.rtro,0) rtro_m6
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 30 and current_date
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 60 and current_date - 31
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 90 and current_date - 61
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 120 and current_date - 91
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 150 and current_date - 121
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id cust_id,
+      sum(wit_withdrawal_dol_amt) rtro
+    from`meli-bi-data.WHOWNER.BT_MP_WITHDRAWALS`
+    where wit_created_dt between current_date - 180 and current_date - 151
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id;
+
+
+-- evolução mensal uso de reclamos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.claims_mensal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.claims_mensal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT distinct
+    li.site_id,
+    li.cust_id,
+    coalesce(a.claims,0) claims_m1,
+    coalesce(b.claims,0) claims_m2,
+    coalesce(c.claims,0) claims_m3,
+    coalesce(d.claims,0) claims_m4,
+    coalesce(e.claims,0) claims_m5,
+    coalesce(f.claims,0) claims_m6
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 30 and current_date
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 60 and current_date - 31
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 90 and current_date - 61
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 120 and current_date - 91
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 150 and current_date - 121
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cla_respondent_id cust_id,
+      count(cla_claim_id) claims
+    from `meli-bi-data.WHOWNER.BT_CM_CLAIMS_V1`
+    where cla_date_claim_opened_dt between current_date - 180 and current_date - 151
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id;
+
+
+-- evolução mensal uso de cashout
+drop table if exists `meli-bi-data.SBOX_PF_MKT.co_mensal`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.co_mensal`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  SELECT distinct
+    li.site_id,
+    li.cust_id,
+    coalesce(a.co,0) co_m1,
+    coalesce(b.co,0) co_m2,
+    coalesce(c.co,0) co_m3,
+    coalesce(d.co,0) co_m4,
+    coalesce(e.co,0) co_m5,
+    coalesce(f.co,0) co_m6
+  FROM `meli-bi-data.SBOX_PF_MKT.lista_inicial` li
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 30 and current_date
+    group by 1
+    ) a
+    ON li.cust_id = a.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 60 and current_date - 31
+    group by 1
+    ) b
+    ON li.cust_id = b.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 90 and current_date - 61
+    group by 1
+    ) c
+    ON li.cust_id = c.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 120 and current_date - 91
+    group by 1
+    ) d
+    ON li.cust_id = d.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 150 and current_date - 121
+    group by 1
+    ) e
+    ON li.cust_id = e.cust_id
+  LEFT JOIN
+    (
+    select
+      cus_cust_id_sel cust_id,
+      (sum(bpp_cashout_final) + sum(bpp_cashout_etiqueta) + sum(bpp_debt)) co
+    from `meli-bi-data.SBOX_PF_MKT.fraud_main`
+    where tim_day_winning_date between current_date - 180 and current_date - 151
+    group by 1
+    ) f
+    ON li.cust_id = f.cust_id;
+
+
+
+------------------------- RATIOS - MES1 X MES2 -------------------------
+
+-- ratios de adelantos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_adto3`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_adto3`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when adto_m2 = 0 and adto_m1 = 0 then 0
+      when adto_m2 = 0 and adto_m1 > 0 then 1000
+      else round(cast(adto_m1 as numeric)/nullif(cast(adto_m2 as numeric),0),2)
+    end) ratio_adto_m1,
+    (case
+      when adto_m3 = 0 and adto_m2 = 0 then 0
+      when adto_m3 = 0 and adto_m2 > 0 then 1000
+      else round(cast(adto_m2 as numeric)/nullif(cast(adto_m3 as numeric),0),2)
+    end) ratio_adto_m2,
+    (case
+      when adto_m4 = 0 and adto_m3 = 0 then 0
+      when adto_m4 = 0 and adto_m3 > 0 then 1000
+      else round(cast(adto_m3 as numeric)/nullif(cast(adto_m4 as numeric),0),2)
+    end) ratio_adto_m3
+  from `meli-bi-data.SBOX_PF_MKT.adto_mensal`;
+
+
+-- ratios de retiros
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_rtro3`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_rtro3`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when rtro_m2 = 0 and rtro_m1 = 0 then 0
+      when rtro_m2 = 0 and rtro_m1 > 0 then 1000
+      else round(cast(rtro_m1 as numeric)/nullif(cast(rtro_m2 as numeric),0),2)
+    end) ratio_rtro_m1,
+    (case
+      when rtro_m3 = 0 and rtro_m2 = 0 then 0
+      when rtro_m3 = 0 and rtro_m2 > 0 then 1000
+      else round(cast(rtro_m2 as numeric)/nullif(cast(rtro_m3 as numeric),0),2)
+    end) ratio_rtro_m2,
+    (case
+      when rtro_m4 = 0 and rtro_m3 = 0 then 0
+      when rtro_m4 = 0 and rtro_m3 > 0 then 1000
+      else round(cast(rtro_m3 as numeric)/nullif(cast(rtro_m4 as numeric),0),2)
+    end) ratio_rtro_m3
+  from `meli-bi-data.SBOX_PF_MKT.rtro_mensal`;
+
+
+-- ratios de reclamações
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_claims3`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_claims3`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when claims_m2 = 0 and claims_m1 = 0 then 0
+      when claims_m2 = 0 and claims_m1 > 0 then 1000
+      else round(cast(claims_m1 as numeric)/nullif(cast(claims_m2 as numeric),0),2)
+    end) ratio_claims_m1,
+    (case
+      when claims_m3 = 0 and claims_m2 = 0 then 0
+      when claims_m3 = 0 and claims_m2 > 0 then 1000
+      else round(cast(claims_m2 as numeric)/nullif(cast(claims_m3 as numeric),0),2)
+    end) ratio_claims_m2,
+    (case
+      when claims_m4 = 0 and claims_m3 = 0 then 0
+      when claims_m4 = 0 and claims_m3 > 0 then 1000
+      else round(cast(claims_m3 as numeric)/nullif(cast(claims_m4 as numeric),0),2)
+    end) ratio_claims_m3
+  from `meli-bi-data.SBOX_PF_MKT.claims_mensal`;
+
+
+-- ratios de cashout
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_co3`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_co3`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    (case
+      when co_m2 = 0 and co_m1 = 0 then 0
+      when co_m2 = 0 and co_m1 > 0 then 1000
+      else round(cast(co_m1 as numeric)/nullif(cast(co_m2 as numeric),0),2)
+    end) ratio_co_m1,
+    (case
+      when co_m3 = 0 and co_m2 = 0 then 0
+      when co_m3 = 0 and co_m2 > 0 then 1000
+      else round(cast(co_m2 as numeric)/nullif(cast(co_m3 as numeric),0),2)
+    end) ratio_co_m2,
+    (case
+      when co_m4 = 0 and co_m3 = 0 then 0
+      when co_m4 = 0 and co_m3 > 0 then 1000
+      else round(cast(co_m3 as numeric)/nullif(cast(co_m4 as numeric),0),2)
+    end) ratio_co_m3
+  from `meli-bi-data.SBOX_PF_MKT.co_mensal`;
+
+
+
+------------------------- RATIOS - MES1 X MESES -------------------------
+
+-- ratios de adelantos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_adto4`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_adto4`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    adto_m1 mes_atual,
+    (adto_m2 + adto_m3 + adto_m4 + adto_m5 + adto_m6) ultimos_meses,
+    (case
+      when adto_m2 + adto_m3 + adto_m4 + adto_m5 + adto_m6 = 0 then 1000
+      else round(cast(adto_m1 as numeric)/nullif(cast((adto_m2 + adto_m3 + adto_m4 + adto_m5 + adto_m6)/5 as numeric),0),2)
+    end) ratio_adto_mxmm
+  from `meli-bi-data.SBOX_PF_MKT.adto_mensal`
+  where adto_m1 > 5000;
+
+
+-- ratios de retiros
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_rtro4`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_rtro4`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    rtro_m1 mes_atual,
+    (rtro_m2 + rtro_m3 + rtro_m4 + rtro_m5 + rtro_m6) ultimos_meses,
+    (case
+      when rtro_m2 + rtro_m3 + rtro_m4 + rtro_m5 + rtro_m6 = 0 then 1000
+      else round(cast(rtro_m1 as numeric)/nullif(cast((rtro_m2 + rtro_m3 + rtro_m4 + rtro_m5 + rtro_m6)/5 as numeric),0),2)
+    end) ratio_rtro_mxmm
+  from `meli-bi-data.SBOX_PF_MKT.rtro_mensal`;
+
+
+-- ratios de reclamações
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_claims4`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_claims4`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    claims_m1 mes_atual,
+    (claims_m2 + claims_m3 + claims_m4 + claims_m5 + claims_m6) ultimos_meses,
+    (case
+      when claims_m2 + claims_m3 + claims_m4 + claims_m5 + claims_m6 = 0 then 1000
+      else round(cast(claims_m1 as numeric)/nullif(cast((claims_m2 + claims_m3 + claims_m4 + claims_m5 + claims_m6)/5 as numeric),0),2)
+    end) ratio_claims_mxmm
+  from `meli-bi-data.SBOX_PF_MKT.claims_mensal`;
+
+
+-- ratios de qualificações negativa
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ratios_co4`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ratios_co4`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    site_id,
+    cust_id,
+    co_m1 mes_atual,
+    (co_m2 + co_m3 + co_m4 + co_m5 + co_m6) ultimos_meses,
+    (case
+      when co_m2 + co_m3 + co_m4 + co_m5 + co_m6 = 0 then 1000
+      else round(cast(co_m1 as numeric)/nullif(cast((co_m2 + co_m3 + co_m4 + co_m5 + co_m6)/5 as numeric),0),2)
+    end) ratio_co_mxmm
+  from `meli-bi-data.SBOX_PF_MKT.co_mensal`;
+
+
+
+------------------------------------ REGRA -----------------------------------
+
+-- junção de ratios
+drop table if exists `meli-bi-data.SBOX_PF_MKT.all_ratios2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.all_ratios2`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    a.site_id,
+    a.cust_id,
+    cast(h.semana_atual as numeric) adto_s_atual,
+    cast(g.semana_atual as numeric) rtro_s_atual,
+    cast(coalesce(i.semana_atual,0) as numeric) claims_s_atual,
+    cast(j.semana_atual as numeric) co_s_atual,
+    cast(t.mes_atual as numeric) adto_m_atual,
+    cast(s.mes_atual as numeric) rtro_m_atual,
+    cast(coalesce(u.mes_atual,0) as numeric) claims_m_atual,
+    cast(v.mes_atual as numeric) co_m_atual,
+
+    cast(b.ratio_adto_s1 as numeric) ratio_adto_s1,
+    cast(h.ratio_adto_sxss as numeric) ratio_adto_sxss,
+    cast(a.ratio_rtro_s1 as numeric) ratio_rtro_s1,
+    cast(g.ratio_rtro_sxss as numeric) ratio_rtro_sxss,
+    cast(coalesce(c.ratio_claims_s1,0) as numeric) ratio_claims_s1,
+    cast(coalesce(i.ratio_claims_sxss,0) as numeric) ratio_claims_sxss,
+    cast(d.ratio_co_s1 as numeric) ratio_co_s1,
+    cast(j.ratio_co_sxss as numeric) ratio_co_sxss,
+
+    cast(n.ratio_adto_m1 as numeric) ratio_adto_m1,
+    cast(t.ratio_adto_mxmm as numeric) ratio_adto_mxmm,
+    cast(m.ratio_rtro_m1 as numeric) ratio_rtro_m1,
+    cast(s.ratio_rtro_mxmm as numeric) ratio_rtro_mxmm,
+    cast(coalesce(o.ratio_claims_m1,0) as numeric) ratio_claims_m1,
+    cast(coalesce(u.ratio_claims_mxmm,0) as numeric) ratio_claims_mxmm,
+    cast(p.ratio_co_m1 as numeric) ratio_co_m1,
+    cast(v.ratio_co_mxmm as numeric) ratio_co_mxmm
+
+  from `meli-bi-data.SBOX_PF_MKT.ratios_rtro1` a
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_adto1` b
+    on a.cust_id = b.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_claims1` c
+    on a.cust_id = c.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_co1` d
+    on a.cust_id = d.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_rtro2` g
+    on a.cust_id = g.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_adto2` h
+    on a.cust_id = h.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_claims2` i
+    on a.cust_id = i.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_co2` j
+    on a.cust_id = j.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_rtro3` m
+    on a.cust_id = m.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_adto3` n
+    on a.cust_id = n.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_claims3` o
+    on a.cust_id = o.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_co3` p
+    on a.cust_id = p.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_rtro4` s
+    on a.cust_id = s.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_adto4` t
+    on a.cust_id = t.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_claims4` u
+    on a.cust_id = u.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ratios_co4` v
+    on a.cust_id = v.cust_id;
+
+
+-- select * from all_ratios;
+
+
+
+---------------------------- SEGMENTAÇÃO BOF ----------------------------
+
+-- segmentación bof
+drop table if exists `meli-bi-data.SBOX_PF_MKT.segmentacion_bof`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.segmentacion_bof`
+OPTIONS(
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    a.cust_id,
+    sum(b.pay_total_paid_dol_amt) tpv,
+    sum(c.gmv_usd) gmv,
+    d.segmento,
+    d.mlider_flag
+  from `meli-bi-data.SBOX_PF_MKT.lista_inicial` a
+  left join `meli-bi-data.WHOWNER.BT_MP_PAY_PAYMENTS` b
+    on a.cust_id = b.cus_cust_id_sel
+  left join `meli-bi-data.SBOX_PF_MKT.fraud_main` c
+    on a.cust_id = c.cus_cust_id_sel
+  left join `meli-bi-data.WHOWNER.LK_SEGMENTO_SELLERS` d
+    on a.cust_id = d.cus_cust_id_sel
+  where c.tim_day_winning_date >= current_date - 30
+    and b.pay_created_dt >= current_date - 30
+  group by 1,4,5;
+
+
+-- ev atual
+drop table if exists `meli-bi-data.SBOX_PF_MKT.ev_atual2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.ev_atual2`
+OPTIONS (
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select distinct
+    a.cust_id,
+    first_value (b.cus_verif_id) over (partition by b.cus_cust_id order by b.changed_dt desc) ev_atual
+  from `meli-bi-data.SBOX_PF_MKT.lista_inicial` a
+  left join `meli-bi-data.WHOWNER.BT_CUST_VERIFICATIONS` b
+    on a.cust_id = b.cus_cust_id;
+
+
+-- todas as restricoes
+drop table if exists `meli-bi-data.SBOX_PF_MKT.all_res2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.all_res2`
+OPTIONS (
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    a.cust_id,
+    b.reason_id,
+    b.creation_date,
+    dense_rank() over (partition by a.cust_id order by b.creation_date, b.reason_id) as orden
+  from `meli-bi-data.SBOX_PF_MKT.lista_inicial` a
+  left join `meli-bi-data.WHOWNER.BT_MPR_CUST_RESTRICTION` b
+    on a.cust_id = b.cust_id
+  where b.status = 'P';
+
+
+-- res atuais
+drop table if exists `meli-bi-data.SBOX_PF_MKT.res_atual2`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.res_atual2`
+OPTIONS (
+  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
+) AS
+  select
+    a.cust_id,
+    concat(max(case when orden = 1 then b.reason_id else '-' end), 
+           max(case when orden = 2 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 3 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 4 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 5 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 6 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 7 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 8 then concat(' + ' , b.reason_id) else '' end),
+           max(case when orden = 9 then concat(' + ' , b.reason_id) else '' end)) res_atual
+    from `meli-bi-data.SBOX_PF_MKT.lista_inicial` a
+    left join `meli-bi-data.SBOX_PF_MKT.all_res2` b
+        on a.cust_id = b.cust_id
+    group by 1;
+
+
+-------------------------- EXECUÇÃO DA REGRA --------------------------
+
+-- tabla de scoring para subir las infos
+drop table if exists `meli-bi-data.SBOX_PF_MKT.marca_bof_confirmado_15d`;
+CREATE TABLE `meli-bi-data.SBOX_PF_MKT.marca_bof_confirmado_15d`
+  (
+  insert_date date,
+  site_id string(80),
+  cust_id int,
+  ev_atual string(80),
+  res_atual string(80),
+  segmento_fco_seller string(80),
+  rtro_s_atual numeric,
+  claims_s_atual numeric,
+  co_s_atual numeric,
+  rtro_m_atual numeric,
+  claims_m_atual numeric,
+  co_m_atual numeric,
+  ratio_rtro_s1 numeric,
+  ratio_rtro_sxss numeric,
+  ratio_claims_s1 numeric,
+  ratio_claims_sxss numeric,
+  ratio_co_s1 numeric,
+  ratio_co_sxss numeric,
+  ratio_rtro_m1 numeric,
+  ratio_rtro_mxmm numeric,
+  ratio_claims_m1 numeric,
+  ratio_claims_mxmm numeric,
+  ratio_co_m1 numeric,
+  ratio_co_mxmm numeric
+  );
+
+
+-- seleção de dados
+insert into `meli-bi-data.SBOX_PF_MKT.marca_bof_confirmado_15d`
+ (insert_date, site_id, cust_id, ev_atual, res_atual, segmento_fco_seller, rtro_s_atual, claims_s_atual,
+  co_s_atual, rtro_m_atual, claims_m_atual, co_m_atual, ratio_rtro_s1, ratio_rtro_sxss, ratio_claims_s1, ratio_claims_sxss,
+  ratio_co_s1, ratio_co_sxss, ratio_rtro_m1, ratio_rtro_mxmm, ratio_claims_m1, ratio_claims_mxmm, ratio_co_m1, ratio_co_mxmm)
+  select distinct
+    current_date,
+    a.site_id,
+    a.cust_id,
+    (case when c.ev_atual is null then 'DM' else c.ev_atual end) ev_atual,
+    d.res_atual,
+    (case when b.gmv > 15000 or b.tpv > 10000 or b.segmento in ('CARTERA GESTIONADA', 'TO', 'MIDTAIL') or b.mlider_flag = True then 'big_seller' else 'seller_lt' end) segmento_fco_seller,
+    a.rtro_s_atual,
+    a.claims_s_atual,
+    a.co_s_atual,
+    a.rtro_m_atual,
+    a.claims_m_atual,
+    a.co_m_atual,
+    a.ratio_rtro_s1,
+    a.ratio_rtro_sxss,
+    a.ratio_claims_s1,
+    a.ratio_claims_sxss,
+    a.ratio_co_s1,
+    a.ratio_co_sxss,
+    a.ratio_rtro_m1,
+    a.ratio_rtro_mxmm,
+    a.ratio_claims_m1,
+    a.ratio_claims_mxmm,
+    a.ratio_co_m1,
+    a.ratio_co_mxmm
+  from `meli-bi-data.SBOX_PF_MKT.all_ratios2` a
+  left join `meli-bi-data.SBOX_PF_MKT.segmentacion_bof` b
+    on a.cust_id = b.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.ev_atual2` c
+    on a.cust_id = c.cust_id
+  left join `meli-bi-data.SBOX_PF_MKT.res_atual2` d
+    on a.cust_id = d.cust_id
+  where
+    (
+    c.ev_atual in ('VENDCONT', 'PAUSA_TOTAL', 'PREV_INHA_PERM')
+    and co_s_atual + co_m_atual > 0
+    )
+    or
+    (
+    d.res_atual like '%FONDEO_DUDOSO%' or d.res_atual like '%FRD_BOLETO%' or d.res_atual like '%FRAUDE_ML%' or d.res_atual like '%TKO%' or d.res_atual like '%RET_MP%' or d.res_atual like '%ALERTA_DISPUTAS%' or d.res_atual like '%MONEY_OUT_HI%'
+    and co_s_atual + co_m_atual > 0
+    )
+    or
+    (
+    ratio_claims_sxss + ratio_claims_mxmm + ratio_claims_s1 + ratio_claims_m1 > 10
+    and (co_s_atual + co_m_atual) > 1000
+    );
+
+
+
+--------------------------- SELEÇÃO DE DADOS ---------------------------
+
+-- DDL dos dados
+select * from `meli-bi-data.SBOX_PF_MKT.marca_bof_confirmado_15d` order by 1 desc, 6 desc;
+
+delete from `meli-bi-data.SBOX_PF_MKT.marca_bof_confirmado_15d` where insert_date = current_date;
+
+UPDATE `meli-bi-data.SBOX_PF_MKT.marca_bof_confirmado_15d`
+  SET ev_atual = 'DM'
+  WHERE inser_date = current_date;
+
+
+
+
