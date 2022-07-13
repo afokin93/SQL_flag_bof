@@ -5,43 +5,15 @@
 
 -- Doc Base: https://docs.google.com/presentation/d/1uf2fiSl0yrifrLOO1CFnfcVlmx43AdqwLfI1C-pahOQ/edit#slide=id.g1045e6e6e7c_0_655
 
--- sellers que publicaram muitos electronics
-drop table if exists `meli-bi-data.SBOX_PF_MKT.lista_inicial0`;
-CREATE TABLE `meli-bi-data.SBOX_PF_MKT.lista_inicial0`
-OPTIONS(
-  expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
-) AS
-  select
-    sit_site_id site_id,
-    cus_cust_id_sel cust_id,
-    cast(cus_ru_fixed_sel as date) fecha_regi,
-    sum(gmv_usd) gmv_total
-  from `meli-bi-data.SBOX_PF_MKT.fraud_main`
-  where cast(cus_ru_fixed_sel as date) <= current_date - interval '6' month
-    and tim_day_winning_date > current_date - interval '6' month
-    and sit_site_id in ('MLB   ','MLA   ','MLM   ','MLC   ','MCO   ')
-  group by 1,2,3
-  having gmv_total > 20000;
-
-
--- lista complementar com pxq
+-- universo big seller
 drop table if exists `meli-bi-data.SBOX_PF_MKT.lista_inicial`;
 CREATE TABLE `meli-bi-data.SBOX_PF_MKT.lista_inicial`
 OPTIONS(
   expiration_timestamp = TIMESTAMP_ADD(CURRENT_TIMESTAMP(), INTERVAL 1 DAY)
 ) AS
   select
-    b.site_id,
-    b.cust_id,
-    b.fecha_regi,
-    sum(a.ite_item_quantity_total * a.ite_item_base_price) pxq_total,
-    b.gmv_total
-  from `meli-bi-data.EXPLOTACION.LK_ITE_ITEMS` a
-  left join `meli-bi-data.SBOX_PF_MKT.lista_inicial0` b
-    on a.cus_cust_id_sel = b.cust_id
-  where cast(a.ite_item_auction_start_datetime as date) > current_date - interval '6' month
-  group by 1,2,3,5
-  having pxq_total > 100000;
+    cust_id
+  from `meli-bi-data.SBOX_PF_MKT.universo_big_sellers`;
 
 
 
